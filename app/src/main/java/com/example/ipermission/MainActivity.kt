@@ -19,9 +19,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun test() {
-        val strings = arrayOf(Manifest.permission.READ_CALENDAR, Manifest.permission.WRITE_CONTACTS
+//        val strings = arrayOf(Manifest.permission.READ_CALENDAR, Manifest.permission.WRITE_CONTACTS
+//            , Manifest.permission.SEND_SMS, Manifest.permission.CAMERA)
+        Permission.with(this).permission(Manifest.permission.READ_CALENDAR, Manifest.permission.WRITE_CONTACTS
             , Manifest.permission.SEND_SMS, Manifest.permission.CAMERA)
-        Permission.with(this).permission(strings)
             .callback(object : PermissionActivity.PermissionCallback {
                 override fun onPermissionGranted() {
                     Log.d("robin", "onPermissionGranted")

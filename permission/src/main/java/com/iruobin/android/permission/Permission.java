@@ -17,7 +17,7 @@ public class Permission {
         return new Permission(context);
     }
 
-    public Permission permission(String[] permissions) {
+    public Permission permission(String... permissions) {
         this.permissions = permissions;
         return this;
     }
