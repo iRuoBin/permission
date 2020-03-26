@@ -7,9 +7,13 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class PermissionActivity extends Activity {
 
@@ -25,15 +29,6 @@ public class PermissionActivity extends Activity {
         context.startActivity(intent);
     }
 
-    /*
-     * 权限申请回调
-     */
-    public interface PermissionCallback {
-        void onPermissionGranted();
-        void shouldShowRational(String permission);
-        void onPermissionReject(String permission);
-    }
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,12 +38,12 @@ public class PermissionActivity extends Activity {
         }
         // 当api大于23时，才进行权限申请
         String[] permissions = getIntent().getStringArrayExtra(KEY_PERMISSIONS);
-        if (Build.VERSION.SDK_INT >= 23) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             requestPermissions(permissions, RC_REQUEST_PERMISSION);
         }
     }
 
-    @TargetApi(23)
+    @TargetApi(Build.VERSION_CODES.M)
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode != RC_REQUEST_PERMISSION) {
@@ -63,23 +58,42 @@ public class PermissionActivity extends Activity {
     }
 
 
-    @TargetApi(23)
+    @TargetApi(Build.VERSION_CODES.M)
     void onRequestPermissionsResult(String[] permissions, int[] grantResults, boolean[] shouldShowRequestPermissionRationale) {
         int length = permissions.length;
         int granted = 0;
+        List<String> rationalPermissions = new ArrayList<>();
+        List<String> rejectedPermissions = new ArrayList<>();
+
         for (int i = 0; i < length; i++) {
             if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
                 if (shouldShowRequestPermissionRationale[i]){
-                    CALLBACK.shouldShowRational(permissions[i]);
+                    Log.d(Permission.TAG, "shouldShowPermissionRationale: " + permissions[i]);
+                    CALLBACK.shouldShowPermissionRationale(permissions[i]);
+                    rationalPermissions.add(permissions[i]);
                 } else {
-                    CALLBACK.onPermissionReject(permissions[i]);
+                    Log.d(Permission.TAG, "onPermissionRejected: " + permissions[i]);
+                    CALLBACK.onPermissionRejected(permissions[i]);
+                    rejectedPermissions.add(permissions[i]);
                 }
             } else {
+                Log.d(Permission.TAG, "onPermissionGranted: " + permissions[i]);
+                CALLBACK.onPermissionGranted(permissions[i]);
                 granted++;
             }
         }
+
         if (granted == length) {
-            CALLBACK.onPermissionGranted();
+            Log.d(Permission.TAG, "onPermissionsGranted: " + permissions.length);
+            CALLBACK.onPermissionsGranted(permissions);
+        } else {
+            if (rationalPermissions.size() > 0) {
+                Log.d(Permission.TAG, "shouldShowPermissionsRationale: " + rationalPermissions.size());
+                CALLBACK.shouldShowPermissionsRationale(rationalPermissions.toArray(new String[0]));
+            } else {
+                Log.d(Permission.TAG, "onPermissionsRejected: " + rejectedPermissions.size());
+                CALLBACK.onPermissionsRejected(rejectedPermissions.toArray(new String[0]));
+            }
         }
         finish();
     }

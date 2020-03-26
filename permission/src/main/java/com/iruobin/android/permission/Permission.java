@@ -3,8 +3,10 @@ package com.iruobin.android.permission;
 import android.content.Context;
 
 public class Permission {
+    public static final String TAG = "Permission";
+
     // 权限申请回调
-    private PermissionActivity.PermissionCallback callback;
+    private PermissionCallback callback;
     // 需要申请的权限
     private String[] permissions;
     private Context context;
@@ -22,7 +24,7 @@ public class Permission {
         return this;
     }
 
-    public Permission callback(PermissionActivity.PermissionCallback callback) {
+    public Permission callback(PermissionCallback callback) {
         this.callback = callback;
         return this;
     }
