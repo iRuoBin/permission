@@ -69,30 +69,42 @@ public class PermissionActivity extends Activity {
             if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
                 if (shouldShowRequestPermissionRationale[i]){
                     Log.d(Permission.TAG, "shouldShowPermissionRationale: " + permissions[i]);
-                    CALLBACK.shouldShowPermissionRationale(permissions[i]);
+                    if (CALLBACK != null) {
+                        CALLBACK.shouldShowPermissionRationale(permissions[i]);
+                    }
                     rationalPermissions.add(permissions[i]);
                 } else {
                     Log.d(Permission.TAG, "onPermissionRejected: " + permissions[i]);
-                    CALLBACK.onPermissionRejected(permissions[i]);
+                    if (CALLBACK != null) {
+                        CALLBACK.onPermissionRejected(permissions[i]);
+                    }
                     rejectedPermissions.add(permissions[i]);
                 }
             } else {
                 Log.d(Permission.TAG, "onPermissionGranted: " + permissions[i]);
-                CALLBACK.onPermissionGranted(permissions[i]);
+                if (CALLBACK != null) {
+                    CALLBACK.onPermissionGranted(permissions[i]);
+                }
                 granted++;
             }
         }
 
         if (granted == length) {
             Log.d(Permission.TAG, "onPermissionsGranted: " + permissions.length);
-            CALLBACK.onPermissionsGranted(permissions);
+            if (CALLBACK != null) {
+                CALLBACK.onPermissionsGranted(permissions);
+            }
         } else {
             if (rationalPermissions.size() > 0) {
                 Log.d(Permission.TAG, "shouldShowPermissionsRationale: " + rationalPermissions.size());
-                CALLBACK.shouldShowPermissionsRationale(rationalPermissions.toArray(new String[0]));
+                if (CALLBACK != null) {
+                    CALLBACK.shouldShowPermissionsRationale(rationalPermissions.toArray(new String[0]));
+                }
             } else {
                 Log.d(Permission.TAG, "onPermissionsRejected: " + rejectedPermissions.size());
-                CALLBACK.onPermissionsRejected(rejectedPermissions.toArray(new String[0]));
+                if (CALLBACK != null) {
+                    CALLBACK.onPermissionsRejected(rejectedPermissions.toArray(new String[0]));
+                }
             }
         }
         finish();
