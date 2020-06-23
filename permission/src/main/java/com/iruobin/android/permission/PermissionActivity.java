@@ -7,10 +7,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,10 +15,10 @@ public class PermissionActivity extends Activity {
 
     public static final String KEY_PERMISSIONS = "permissions";
     private static final int RC_REQUEST_PERMISSION = 100;
-    private static PermissionCallback CALLBACK;
+    private static PermissionCallback sCallback;
 
     public static void request(Context context, String[] permissions, PermissionCallback callback) {
-        CALLBACK = callback;
+        sCallback = callback;
         Intent intent = new Intent(context, PermissionActivity.class);
         intent.putExtra(KEY_PERMISSIONS, permissions);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -30,10 +26,9 @@ public class PermissionActivity extends Activity {
     }
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Intent intent = getIntent();
-        if (!intent.hasExtra(KEY_PERMISSIONS)) {
+        if (!getIntent().hasExtra(KEY_PERMISSIONS)) {
             return;
         }
         // 当api大于23时，才进行权限申请
@@ -45,13 +40,13 @@ public class PermissionActivity extends Activity {
 
     @TargetApi(Build.VERSION_CODES.M)
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         if (requestCode != RC_REQUEST_PERMISSION) {
             return;
         }
         // 处理申请结果
         boolean[] shouldShowRequestPermissionRationale = new boolean[permissions.length];
-        for (int i = 0; i < permissions.length; ++i) {
+        for (int i = 0; i < permissions.length; i++) {
             shouldShowRequestPermissionRationale[i] = shouldShowRequestPermissionRationale(permissions[i]);
         }
         this.onRequestPermissionsResult(permissions, grantResults, shouldShowRequestPermissionRationale);
@@ -60,51 +55,36 @@ public class PermissionActivity extends Activity {
 
     @TargetApi(Build.VERSION_CODES.M)
     void onRequestPermissionsResult(String[] permissions, int[] grantResults, boolean[] shouldShowRequestPermissionRationale) {
-        int length = permissions.length;
-        int granted = 0;
+        List<String> grantedPermissions = new ArrayList<>();
         List<String> rationalPermissions = new ArrayList<>();
         List<String> rejectedPermissions = new ArrayList<>();
 
-        for (int i = 0; i < length; i++) {
-            if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
-                if (shouldShowRequestPermissionRationale[i]){
-                    Log.d(Permission.TAG, "shouldShowPermissionRationale: " + permissions[i]);
-                    if (CALLBACK != null) {
-                        CALLBACK.shouldShowPermissionRationale(permissions[i]);
-                    }
+        for (int i = 0; i < permissions.length; i++) {
+            if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
+                // 用户同意的权限
+                PrintLog.d("Granted: " + permissions[i]);
+                grantedPermissions.add(permissions[i]);
+            } else {
+                if (shouldShowRequestPermissionRationale[i]) {
+                    // 用户拒绝的权限（未勾选不再提示）
+                    PrintLog.d("Rationale: " + permissions[i]);
                     rationalPermissions.add(permissions[i]);
                 } else {
-                    Log.d(Permission.TAG, "onPermissionRejected: " + permissions[i]);
-                    if (CALLBACK != null) {
-                        CALLBACK.onPermissionRejected(permissions[i]);
-                    }
+                    // 用户拒绝的权限（勾选不再提示）
+                    PrintLog.d("Rejected: " + permissions[i]);
                     rejectedPermissions.add(permissions[i]);
                 }
-            } else {
-                Log.d(Permission.TAG, "onPermissionGranted: " + permissions[i]);
-                if (CALLBACK != null) {
-                    CALLBACK.onPermissionGranted(permissions[i]);
-                }
-                granted++;
             }
         }
 
-        if (granted == length) {
-            Log.d(Permission.TAG, "onPermissionsGranted: " + permissions.length);
-            if (CALLBACK != null) {
-                CALLBACK.onPermissionsGranted(permissions);
-            }
-        } else {
-            if (rationalPermissions.size() > 0) {
-                Log.d(Permission.TAG, "shouldShowPermissionsRationale: " + rationalPermissions.size());
-                if (CALLBACK != null) {
-                    CALLBACK.shouldShowPermissionsRationale(rationalPermissions.toArray(new String[0]));
-                }
-            } else {
-                Log.d(Permission.TAG, "onPermissionsRejected: " + rejectedPermissions.size());
-                if (CALLBACK != null) {
-                    CALLBACK.onPermissionsRejected(rejectedPermissions.toArray(new String[0]));
-                }
+        if (sCallback != null) {
+            sCallback.onPermissionsResult(grantedPermissions, rationalPermissions, rejectedPermissions);
+        }
+
+        if (permissions.length == grantedPermissions.size()) {
+            PrintLog.d("allPermissionsGranted: " + grantedPermissions.size());
+            if (sCallback != null) {
+                sCallback.allPermissionsGranted(grantedPermissions);
             }
         }
         finish();

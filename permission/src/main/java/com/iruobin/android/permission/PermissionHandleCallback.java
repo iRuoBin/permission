@@ -1,8 +1,9 @@
 package com.iruobin.android.permission;
 
 import android.content.Context;
+import java.util.List;
 
-public abstract class PermissionHandleCallback extends PermissionDefaultCallback {
+public abstract class PermissionHandleCallback implements PermissionCallback {
 
     Context mContext;
     String mRationale;
@@ -18,33 +19,34 @@ public abstract class PermissionHandleCallback extends PermissionDefaultCallback
         mSetting = setting;
     }
 
-    public abstract void onPermissionsCompleteGranted();
+    public abstract void onPermissionsCompleteGranted(List<String> grantedPermissions);
 
     @Override
-    public void onPermissionsGrant(String[] permissions) {
-        onPermissionsCompleteGranted();
+    public void allPermissionsGranted(List<String> grantedPermissions) {
+        onPermissionsCompleteGranted(grantedPermissions);
     }
 
     @Override
-    public void shouldShowRationals(String[] permissions) {
-        String description = mRationale;
-        if (description == null || description.isEmpty()) {
-            description = "该功能需要以下权限才可正常使用:\n\n" + permissionsDescription(permissions);
+    public void onPermissionsResult(List<String> grantedPermissions, List<String> rationalePermissions,
+                                    List<String> rejectedPermissions) {
+        if (rationalePermissions.size() > 0) {
+            String description = mRationale;
+            if (description == null || description.isEmpty()) {
+                description = "该功能需要以下权限才可正常使用:\n\n" + permissionsDescription(rationalePermissions);
+            }
+            PermissionDialog.rational(mContext, description, this,
+                    rationalePermissions.toArray(new String[0])).show();
+        } else if (rejectedPermissions.size() > 0) {
+            String description = mSetting;
+            if (description == null || description.isEmpty()) {
+                description = "该功能需要以下权限才可正常使用:\n\n" + permissionsDescription(rejectedPermissions)
+                        + "\n\n请前往设置手动开启";
+            }
+            PermissionDialog.setting(mContext, description).show();
         }
-        PermissionDialog.rational(mContext, description, this, permissions).show();
     }
 
-    @Override
-    public void onPermissionsReject(String[] permissions) {
-        String description = mSetting;
-        if (description == null || description.isEmpty()) {
-            description = "该功能需要以下权限才可正常使用:\n\n" + permissionsDescription(permissions)
-                    + "\n\n请前往设置手动开启";
-        }
-        PermissionDialog.setting(mContext, description).show();
-    }
-
-    private String permissionsDescription(String[] permissions) {
+    private String permissionsDescription(List<String> permissions) {
         StringBuilder stringBuilder = new StringBuilder();
         for (String permission : permissions) {
             stringBuilder.append(engToCh(permission.substring(permission.lastIndexOf(".") + 1)));
