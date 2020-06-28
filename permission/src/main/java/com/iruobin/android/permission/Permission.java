@@ -1,7 +1,10 @@
 package com.iruobin.android.permission;
 
 import android.content.Context;
-import android.util.Log;
+import android.os.Build;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Permission {
     private Context context;
@@ -34,6 +37,14 @@ public class Permission {
             PrintLog.d("request permissions is null");
             return;
         }
-        PermissionActivity.request(context, permissions, callback);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            // Android 系统版本 大于等于 6.0
+            PermissionActivity.request(context, permissions, callback);
+        } else {
+            if (callback != null) {
+                callback.onPermissionsResult(Arrays.asList(permissions), new ArrayList<String>(), new ArrayList<String>());
+                callback.allPermissionsGranted(Arrays.asList(permissions));
+            }
+        }
     }
 }
