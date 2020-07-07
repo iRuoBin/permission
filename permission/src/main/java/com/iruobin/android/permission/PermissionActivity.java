@@ -9,6 +9,7 @@ import android.os.Build;
 import android.os.Bundle;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class PermissionActivity extends Activity {
@@ -16,6 +17,7 @@ public class PermissionActivity extends Activity {
     public static final String KEY_PERMISSIONS = "permissions";
     private static final int RC_REQUEST_PERMISSION = 100;
     private static PermissionCallback sCallback;
+    private String[] requestPermissions;
 
     public static void request(Context context, String[] permissions, PermissionCallback callback) {
         sCallback = callback;
@@ -32,9 +34,9 @@ public class PermissionActivity extends Activity {
             return;
         }
         // 当api大于23时，才进行权限申请
-        String[] permissions = getIntent().getStringArrayExtra(KEY_PERMISSIONS);
+        requestPermissions = getIntent().getStringArrayExtra(KEY_PERMISSIONS);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            requestPermissions(permissions, RC_REQUEST_PERMISSION);
+            requestPermissions(requestPermissions, RC_REQUEST_PERMISSION);
         }
     }
 
@@ -42,6 +44,13 @@ public class PermissionActivity extends Activity {
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         if (requestCode != RC_REQUEST_PERMISSION) {
+            return;
+        }
+        // 在某些设备上,当用户拒绝权限时返回空
+        if (permissions == null || permissions.length == 0 || grantResults == null || grantResults.length != permissions.length) {
+            if (sCallback != null) {
+                sCallback.onPermissionsResult(new ArrayList<String>(), new ArrayList<String>(), Arrays.asList(requestPermissions));
+            }
             return;
         }
         // 处理申请结果
