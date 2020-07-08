@@ -11,7 +11,7 @@ allprojects {
 }
 ```
 
-使用 module 的 build.gradle 添加
+使用该库的 module 的 build.gradle 添加
 ```groovy
 dependencies {
     implementation 'com.github.iRuoBin:permission:Version'
@@ -21,9 +21,9 @@ dependencies {
 </br>
 > **注意**：申请的权限必须在 Manifest 里列出
 
-```
+```java
 Permission.with(context)
-        .permission(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO...) //这里写需要的多个权限
+        .permission(Manifest.permission.CAMERA ...) //这里写需要的多个权限
         .callback(new PermissionCallback() {
             /**
              * 所有权限都同意后调用
@@ -51,9 +51,9 @@ Permission.with(context)
 > **注意**：Android 6.0 以下的手机会同意所有权限
 
 使用默认处理 callback 的用法：
-```
+```java
 Permission.with(context)
-        .permission(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO...) //这里写需要的多个权限
+        .permission(Manifest.permission.CAMERA ...) //这里写需要的多个权限
         .callback(new PermissionHandleCallback(context) { //该callback有多个构造函数，可以设定弹框文案
             /**
              * 所有权限都同意后调用
@@ -73,7 +73,7 @@ Permission.with(context)
 </br></br></br>
 使用默认处理 callback 时 -> 用户**拒绝且勾选不再询问选项**时（setting），会弹出如下弹框（文案可设定）：
 
-![rational](/screenshots/setting.png)</br>
+![setting](/screenshots/setting.png)</br>
 
 点 **确定按钮** 会进入该应用的设置界面，引导用户手动开启权限，点 **取消按钮** 则弹框消失
 
