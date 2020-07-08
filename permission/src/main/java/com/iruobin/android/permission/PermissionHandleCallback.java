@@ -23,8 +23,11 @@ public abstract class PermissionHandleCallback implements PermissionCallback {
         init(context, "", "", requestCode);
     }
 
-    public PermissionHandleCallback(Context context, String rationaleDescription,
-                                    String settingDescription, int requestCode) {
+    public PermissionHandleCallback(Context context, String rationaleDescription, String settingDescription) {
+        init(context, rationaleDescription, settingDescription, mRequestCode);
+    }
+
+    public PermissionHandleCallback(Context context, String rationaleDescription, String settingDescription, int requestCode) {
         init(context, rationaleDescription, settingDescription, requestCode);
     }
 
