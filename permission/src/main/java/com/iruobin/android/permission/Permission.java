@@ -37,8 +37,8 @@ public class Permission {
             PrintLog.d("request permissions is null");
             return;
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            // Android 系统版本 大于等于 6.0
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && context.getApplicationInfo().targetSdkVersion >= 23) {
+            // Android 系统版本 大于等于 6.0 且 targetSdkVersion 大于等于 23
             PermissionActivity.request(context, permissions, callback);
         } else {
             if (callback != null) {

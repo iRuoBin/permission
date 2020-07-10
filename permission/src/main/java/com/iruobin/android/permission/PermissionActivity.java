@@ -44,6 +44,7 @@ public class PermissionActivity extends Activity {
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         if (requestCode != RC_REQUEST_PERMISSION) {
+            finish();
             return;
         }
         // 在某些设备上,当用户拒绝权限时返回空
@@ -51,6 +52,7 @@ public class PermissionActivity extends Activity {
             if (sCallback != null) {
                 sCallback.onPermissionsResult(new ArrayList<String>(), new ArrayList<String>(), Arrays.asList(requestPermissions));
             }
+            finish();
             return;
         }
         // 处理申请结果
